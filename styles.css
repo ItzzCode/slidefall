@@ -1,0 +1,16 @@
+canvas {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin:auto;
+}
+
+h1 {
+    text-align: center;
+}
+
+body {
+    background-color: black;
+    color: white;
+    font-family: "Lucida Console", "Courier New", monospace;
+}

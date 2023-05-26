@@ -1,27 +1,55 @@
 var tileRes = 50
-var tileX = 8
-var tileY = 5
+var tileX = 1
+var tileY = 100
 var bgColor = 100
+
+// every frames per second
+var tickSpeed = 20
+
+var playerPos = [0, 0]
+
 
 class sprite {
     // 2d list of RGBA values
     spriteData = [[[127, 127, 127, 1]]]
-    attributes = {}
-    constructor( spriteData, attributes ) {
+    
+    static blank = [0,0,0,0]
+
+    constructor( spriteData ) {
         this.spriteData = spriteData
-        this.attributes = attributes
     }
     
-    displaySprite( x, y, size ) {
+    displaySprite( x, y, tileSize, size ) {
         noStroke()
-        for( let y=0; y < this.spriteData.length; y++ ) {
-            for( let x=0; x < this.spriteData.length; x++ ) {
-                let color = this.spriteData[y][x]
+        for( let i=0; i < this.spriteData.length; i++ ) {
+            for( let j=0; j < this.spriteData.length; j++ ) {
+                let color = this.spriteData[i][j]
                 fill(`rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`)
-                rect(x*size, y*size, 1, 1)
+                rect((x*tileSize+j*size), (y*tileSize+i*size), size, size)
             }
         }
-        noStroke()
+        stroke(0)
+    }
+
+    tileRelativeSize( tileSize ) {
+        return tileSize/this.spriteData[0].length
+    }
+}
+
+var playerSprite = new sprite([
+    [ sprite.blank, sprite.blank, [0,0,0,1], sprite.blank, sprite.blank ],
+    [ sprite.blank, [0,0,0,1], [0,0,0,1], [0,0,0,1], sprite.blank ],
+    [ sprite.blank, sprite.blank, [0,0,0,1], sprite.blank, sprite.blank ],
+    [ sprite.blank, sprite.blank, [0,0,0,1], sprite.blank, sprite.blank ],
+    [ sprite.blank, [0,0,0,1], sprite.blank, [0,0,0,1], sprite.blank ],
+])
+
+class entity {
+    sprite = new sprite()
+    attributes = {}
+    constructor( sprite, attributes ) {
+        this.sprite = sprite
+        this.attributes = attributes
     }
 }
 
@@ -31,19 +59,33 @@ function setup() {
 	textAlign(LEFT, TOP)
 }
 
+function run() {
+    // do stuff?
+}
+
+function keyPressed() {
+    if ( key ==  's' ) {
+        playerPos[1]++
+   } else if ( key ==  'w' ) {
+        playerPos[1]--
+   } else if ( key ==  'd' ) {
+        playerPos[0]++
+   } else if ( key ==  'a' ) {
+        playerPos[0]--
+    }
+}
+
 function draw() {
-	for( let i = 0; i < tileY; i++ ) {
-		for( let j = 0; j < tileX; j++ ) {
+    run()
+
+    fill(0)
+
+	for ( let i = 0; i < tileY; i++ ) {
+		for ( let j = 0; j < tileX; j++ ) {
 			fill(bgColor)
 			rect(j*tileRes, i*tileRes, tileRes, tileRes)
 		}
 	}
-    var a = new sprite([
-        [
-            [255, 0, 255, 1], [251, 72, 93, 1]
-        ],[
-            [255,99,99,0.7], [10, 2, 200, 1]
-        ]
-    ], {})
-    a.displaySprite(0, 0, tileRes)
+    
+    playerSprite.displaySprite(playerPos[0], playerPos[1], tileRes, playerSprite.tileRelativeSize(tileRes))
 }

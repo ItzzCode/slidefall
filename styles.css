@@ -1,12 +1,14 @@
-canvas {
+h1 {
+    text-align: center;
+}
+
+.p5Canvas {
     position: absolute;
     left: 0;
     right: 0;
-    margin:auto;
-}
-
-h1 {
-    text-align: center;
+    margin: auto;
+    border: 3px solid white;
+    padding: 0px;
 }
 
 body {

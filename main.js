@@ -1,12 +1,14 @@
 var tileRes = 50
-var tileX = 1
-var tileY = 100
+var tileX = 9
+var tileY = 5
 var bgColor = 100
+var timeElapsed = 0
 
 // every frames per second
 var tickSpeed = 20
 
 var playerPos = [0, 0]
+var prevPos = [0, 0]
 
 
 class sprite {
@@ -53,6 +55,17 @@ class entity {
     }
 }
 
+function checkBounds() {
+    if (
+        playerPos[0] >= tileX ||
+        playerPos[0] < 0 ||
+        playerPos[1] >= tileY ||
+        playerPos[1] < 0 
+    ) {
+        playerPos = [0, tileY-1] 
+    }
+}
+
 function setup() {
 	//createCanvas(800, 600);
 	createCanvas(tileX*tileRes, tileY*tileRes)
@@ -60,18 +73,25 @@ function setup() {
 }
 
 function run() {
-    // do stuff?
+    timeElapsed++
+
+    checkBounds()
+
+    // Gravity ._.
+    if ( timeElapsed % 30 == 0 && playerPos[1] < tileY - 1 ) {
+        playerPos[1]++
+    }
 }
 
 function keyPressed() {
-    if ( key ==  's' ) {
-        playerPos[1]++
-   } else if ( key ==  'w' ) {
-        playerPos[1]--
-   } else if ( key ==  'd' ) {
-        playerPos[0]++
-   } else if ( key ==  'a' ) {
-        playerPos[0]--
+    if       ( key == 's' ) {
+        if(playerPos[1] < tileY - 1) playerPos[1]++
+    } else if ( key == 'w' ) {
+        if(playerPos[1] > 0) playerPos[1]--
+    } else if ( key == 'd' ) {
+        if(playerPos[0] < tileX - 1) playerPos[0]++
+    } else if ( key == 'a' ) {
+       if(playerPos[0] > 0) playerPos[0]--
     }
 }
 

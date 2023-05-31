@@ -10,7 +10,8 @@ var physicsTime = 0
 
 // every frames per second
 var tickSpeed = 20
-var playerPos = [0, 0]
+
+var selectedPlatform = 0
 
 class sprite {
     // 2d list of RGBA values
@@ -83,26 +84,33 @@ var sprites = {
             [ sprite.none, sprite.black, sprite.none ],
             [ sprite.none, sprite.none, sprite.none ],
         ]
+    ),
+    "test": new sprite(
+        [
+            [ sprite.red, sprite.green, sprite.blue ],
+            [ sprite.yellow, sprite.magenta, sprite.cyan ],
+            [ sprite.orange, sprite.brown, sprite.grey ]
+        ]
     )
 }
 
-var player = new entity(
+var entities = []
+entities.push(new entity(
     sprites["player"],
     {
-        "type": "player"
+        "type": "player",
+        "position": [0, 0]
     }
-)
+))
 
-var entities = []
-
-function checkBounds() {
+function checkHit() {
     if (
-        playerPos[0] >= tileX || 
-        playerPos[0] < 0 ||
-        playerPos[1] >= tileY ||
-        playerPos[1] < 0 
+        entities[getPlayerIndex()].attributes["position"][0] >= tileX || 
+        entities[getPlayerIndex()].attributes["position"][0] < 0 ||
+        entities[getPlayerIndex()].attributes["position"][1] >= tileY ||
+        entities[getPlayerIndex()].attributes["position"][1] < 0 
     ) {
-        playerPos = [0, tileY-1] 
+        entities[getPlayerIndex()].attributes["position"] = [0, tileY-1] 
     }
 }
 
@@ -112,10 +120,21 @@ function addPlatforms() {
             sprites["platform"],
             {
                 "type": "platform",
-                "position": [0, i]
+                "position": [i % tileX + 1, i]
             }
         ))
     }
+}
+
+function getPlayerIndex() {
+    // there's gotta be a better way 
+    return entities.indexOf(entities.find(element => element.attributes["type"] == "player"))
+}
+
+function platforms() {
+    return entities.reduce((arr, element, i) => (
+        (element.type == 'platform') && arr.push(i), arr), []
+    )
 }
 
 function setup() {
@@ -130,36 +149,64 @@ function run() {
 
     // time keeping
     timeElapsed++
-    if ( playerPos[1] != tileY-1 ) physicsTime++
+    if ( entities[getPlayerIndex()].attributes["position"][1] != tileY-1 ) physicsTime++
     else physicsTime = 0
 
-    checkBounds()
+    checkHit()
  
     // Gravity ._.
-    if ( physicsTime % tickSpeed == 0 && playerPos[1] < tileY - 1 ) {
-        playerPos[1]++
+    if ( physicsTime % tickSpeed == 0 && entities[getPlayerIndex()].attributes["position"][1] < tileY - 1 ) {
+        entities[getPlayerIndex()].attributes["position"][1]++
     }
 
     // for testing, moving the platforms
-    if ( timeElapsed % tickSpeed == 0 ) entities.forEach(element => {
+    /*if ( timeElapsed % tickSpeed == 0 ) entities.forEach(element => {
         if ( element.attributes["type"] == "platform" ) {
             element.attributes["position"][0] += element.attributes["position"][0] == tileX - 1 ? -(tileX-1) : 1
         }
-    });
+    });*/
 }
 
 function keyPressed() {
-    if        ( key == 's' || keyCode == DOWN_ARROW ) {
-        if(playerPos[1] < tileY - 1) playerPos[1]++
+    // Movement
+    switch ( keyCode ) {
+        case DOWN_ARROW:
+            if(entities[getPlayerIndex()].attributes["position"][1] < tileY - 1)
+            entities[getPlayerIndex()].attributes["position"][1]++
+            break;
 
-    } else if ( key == 'w' || keyCode == UP_ARROW ) {
-        if(playerPos[1] > 0) playerPos[1]--
+        case UP_ARROW:
+            if(entities[getPlayerIndex()].attributes["position"][1] > 0)
+            entities[getPlayerIndex()].attributes["position"][1]--
+            break;
 
-    } else if ( key == 'd' || keyCode == RIGHT_ARROW ) {
-        if(playerPos[0] < tileX - 1) playerPos[0]++
+        case RIGHT_ARROW:
+            if(entities[getPlayerIndex()].attributes["position"][0] < tileX - 1)
+            entities[getPlayerIndex()].attributes["position"][0]++
+            break;
 
-    } else if ( key == 'a' || keyCode == LEFT_ARROW ) {
-       if(playerPos[0] > 0) playerPos[0]--
+        case LEFT_ARROW:
+            if(entities[getPlayerIndex()].attributes["position"][0] > 0)
+            entities[getPlayerIndex()].attributes["position"][0]--
+            break;
+        
+        default:
+            break;
+    }
+
+    // Platforms
+    switch ( key ) {
+        case 'w':
+            if ( platforms() )
+            selectedPlatform -= 1
+            break;
+        
+        case 's':
+            selectedPlatform += 1
+            break;
+    
+        default:
+            break;
     }
 }
 
@@ -177,13 +224,11 @@ function draw() {
     if ( debug ) {
         fill(0)
         textSize(20)
-        text(playerPos,0,0)
+        text(entities[getPlayerIndex()].attributes["position"],0,0)
         text(timeElapsed,0,tileRes*1)
         text(physicsTime,0,tileRes*2)
+        text(selectedPlatform,0,tileRes*3)
     }
-    
-    // display player
-    player.displaySprite(playerPos[0], playerPos[1], tileRes, player.tileRelativeSize(tileRes))
 
     // display entities
     entities.forEach(element => {
